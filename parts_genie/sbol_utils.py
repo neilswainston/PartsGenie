@@ -103,15 +103,22 @@ def _get_feature(comp_def):
 
     if SO_CDS in comp_def.roles:
         # CDS:
-        uniprot_id = comp_def.displayId.split('_')[0]
-#        uniprot_vals = uniprot_utils.get_uniprot_values(
-#            [uniprot_id], ['sequence'])
-        query = ("https://rest.uniprot.org/uniprotkb/search?query="+
-                 uniprot_id+
-                 "&format=tsv&fields=id,sequence")
-        tab = pd.read_table(StringIO(requests.get(query).text))
+#       uniprot_vals = uniprot_utils.get_uniprot_values(
+#       [uniprot_id], ['sequence'])
+        if len(comp_def.sequences) == 0:
+            uniprot_id = comp_def.displayId.split('_')[0]
+            query = ("https://rest.uniprot.org/uniprotkb/search?query="+
+                     uniprot_id+
+                     "&format=tsv&fields=id,sequence")
+            tab = pd.read_table(StringIO(requests.get(query).text))
         
-        uniprot_vals = { uniprot_id: {'Sequence': tab.loc[0,'Sequence']} }
+            uniprot_vals = { uniprot_id: {'Sequence': tab.loc[0,'Sequence']} }
+        else:
+            # If the sequence is present, no UniProt is needed
+            uniprot_id = comp_def.displayId.split('_')[0]
+            uniprot_vals = { uniprot_id: {'Sequence': comp_def.sequence.elements } }
+            if comp_def.sequence.encoding == 'http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html':
+                raise ValueError('CDS with na seq not yet implemented')
 
         if uniprot_id not in uniprot_vals:
             raise ValueError('Uniprot id not found: %s' % uniprot_id)
