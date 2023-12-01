@@ -6,7 +6,8 @@ All rights reserved.
 @author:  neilswainston
 '''
 # pylint: disable=wrong-import-order
-from liv_utils import dna_utils, ice_utils, pairwise, seq_utils
+from liv_utils import dna_utils, pairwise, seq_utils
+#from liv_utils import dna_utils, ice_utils, pairwise, seq_utils
 from thread_utils import AbstractThread
 
 

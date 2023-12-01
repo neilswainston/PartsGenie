@@ -8,7 +8,9 @@ All rights reserved.
 from sbml2sbol.sbol import Document, SO_CDS, SO_RBS
 
 from liv_utils import dna_utils, uniprot_utils
-
+import pandas as pd
+import requests
+from io import StringIO
 
 def to_query(filename, taxonomy_id):
     '''Convert SBOL documents to PartsGenie query.'''
@@ -102,8 +104,14 @@ def _get_feature(comp_def):
     if SO_CDS in comp_def.roles:
         # CDS:
         uniprot_id = comp_def.displayId.split('_')[0]
-        uniprot_vals = uniprot_utils.get_uniprot_values(
-            [uniprot_id], ['sequence'])
+#        uniprot_vals = uniprot_utils.get_uniprot_values(
+#            [uniprot_id], ['sequence'])
+        query = ("https://rest.uniprot.org/uniprotkb/search?query="+
+                 uniprot_id+
+                 "&format=tsv&fields=id,sequence")
+        tab = pd.read_table(StringIO(requests.get(query).text))
+        
+        uniprot_vals = { uniprot_id: {'Sequence': tab.loc[0,'Sequence']} }
 
         if uniprot_id not in uniprot_vals:
             raise ValueError('Uniprot id not found: %s' % uniprot_id)

@@ -21,7 +21,8 @@ from flask import Flask, jsonify, request, Response
 from werkzeug.utils import secure_filename
 
 from ice import export
-from liv_utils import dna_utils, ice_utils, net_utils, uniprot_utils
+from liv_utils import dna_utils, net_utils, uniprot_utils
+#from liv_utils import dna_utils, ice_utils, net_utils, uniprot_utils
 import manager
 import organisms
 
