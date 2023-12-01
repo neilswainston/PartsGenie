@@ -180,6 +180,7 @@ class PartsSolution():
         '''Returns sequences from protein ids, which may be either Uniprot ids,
         or a protein sequence itself.'''
         for idx, feature in enumerate(self.__dna['features']):
+            print(feature.values())
             if feature['typ'] == dna_utils.SO_CDS \
                     and not feature['temp_params']['fixed']:
                 feature['temp_params']['aa_seq'] = \
