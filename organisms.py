@@ -1,22 +1,20 @@
-'''
-PartsGenie (c) University of Liverpool 2020
+"""
+PartsGenie (c) GeneGenie Bioinformatics 2025
 
-All rights reserved.
-
-@author:  neilswainston
-'''
+@author: neilswainston
+"""
 # pylint: disable=invalid-name
 # pylint: disable=wrong-import-order
 import os.path
 
-from liv_utils import codon_utils, ncbi_tax_utils
+from partsgenie.utils import codon_utils, ncbi_tax_utils
 import pandas as pd
 
 
 def get_organisms(parent_id):
-    '''Get all valid organisms (bacterial with codon usage tables).'''
+    """Get all valid organisms (bacterial with codon usage tables)."""
     curr_dir = os.path.dirname(os.path.realpath(__file__))
-    filepath = os.path.join(curr_dir, '%s.csv' % parent_id)
+    filepath = os.path.join(curr_dir, f'{parent_id}.csv')
 
     if not os.path.exists(filepath):
         organisms = codon_utils.get_codon_usage_organisms(expand=True)
@@ -34,13 +32,13 @@ def get_organisms(parent_id):
 
 
 def _write(organisms, filepath):
-    '''Write organisms.'''
+    """Write organisms."""
     df = pd.Series(organisms, name='id')
     df.index.name = 'name'
     df.to_csv(filepath)
 
 
 def _read(filepath):
-    '''Read organisms.'''
+    """Read organisms."""
     df = pd.read_csv(filepath, dtype=str)
     return pd.Series(df['id'].values, index=df['name']).to_dict()

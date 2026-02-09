@@ -1,6 +1,9 @@
+biopython
 cython
-pandas
-Flask
 gunicorn
-pySBOL
-git+https://github.com/neilswainston/liv-utils
+Flask
+matplotlib
+pandas
+pytest
+requests
+viennarna

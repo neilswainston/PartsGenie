@@ -1,4 +1,4 @@
-resultApp.factory("ResultService", ["$http", "$rootScope", "$window", "ICEService", "ErrorService", "ProgressService", function($http, $rootScope, $window, ICEService, ErrorService, ProgressService) {
+resultApp.factory("ResultService", ["$http", "$rootScope", "$window", "ErrorService", "ProgressService", function($http, $rootScope, $window, ErrorService, ProgressService) {
 	var obj = {};
 	obj.results = null;
 	obj.response = {"update": {}};
@@ -19,32 +19,8 @@ resultApp.factory("ResultService", ["$http", "$rootScope", "$window", "ICEServic
 			obj.results = [];
 		}
 		
-		obj.results.push.apply(obj.results, res);
-	};
-	
-	obj.exportOrder = function() {
-		$http.post("/export", {"designs": obj.results, "ice": ICEService.ice}).then(
-				function(resp) {
-					var newWindow = $window.open();
-					newWindow.location = resp.data.path;
-				},
-				function(errResp) {
-					ErrorService.open(errResp.data.message);
-				});
-	};
-
-	obj.saveResults = function() {
-		ProgressService.open("Save dashboard", obj.cancel, obj.update);
-		
-		$http.post("/submit", {"app": "save", "designs": obj.results, "ice": ICEService.ice}).then(
-				function(resp) {
-					jobIds = resp.data.job_ids;
-					obj.listen();
-				},
-				function(errResp) {
-					resultsSaved = false;
-					ErrorService.open(errResp.data.message);
-				});
+		// Note: res has changed from array to single object:
+		obj.results.push(res);
 	};
 	
 	obj.resultsSaved = function() {
@@ -103,6 +79,17 @@ resultApp.factory("ResultService", ["$http", "$rootScope", "$window", "ICEServic
 			listen();
 			onerror(event.message);
 		}
+	};
+
+	obj.exportOrder = function() {
+		$http.post("/export", {"designs": obj.results}).then(
+				function(resp) {
+					var newWindow = $window.open();
+					newWindow.location = resp.data.path;
+				},
+				function(errResp) {
+					ErrorService.open(errResp.data.message);
+				});
 	};
 
 	return obj;

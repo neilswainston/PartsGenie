@@ -1,35 +1,25 @@
-'''
-PartsGenie (c) University of Liverpool 2020
+"""
+PartsGenie (c) GeneGenie Bioinformatics 2025
 
-All rights reserved.
-
-@author:  neilswainston
-'''
-# pylint: disable=bad-continuation
+@author: neilswainston
+"""
 import json
 import time
 
-from ice.ice import IceThread
-from parts_genie import sbol_utils
-from parts_genie.parts import PartsThread
-from plasmid_genie.plasmid import PlasmidThread
+from partsgenie.parts import PartsThread
 import thread_utils
 
 
 class Manager():
-    '''Class to run PathwayGenie application.'''
+    """Class to run PartsGenie application."""
 
     def __init__(self):
         self.__status = {}
         self.__threads = {}
-        self.__writers = {}
 
-    def submit(self, data, taxonomy_id=None, sbol=False):
-        '''Responds to submission.'''
-        if sbol:
-            query = sbol_utils.to_query(data[0], taxonomy_id)
-        else:
-            query = json.loads(data)
+    def submit(self, data):
+        """Responds to submission."""
+        query = json.loads(data)
 
         # Do job in new thread, return result when completed:
         job_ids = []
@@ -48,9 +38,9 @@ class Manager():
         return job_ids
 
     def get_progress(self, job_id):
-        '''Returns progress of job.'''
+        """Returns progress of job."""
         def _check_progress(job_id):
-            '''Checks job progress.'''
+            """Checks job progress."""
             while (job_id not in self.__status or
                     self.__status[job_id]['update']['status'] == 'running'):
                 time.sleep(1)
@@ -63,29 +53,19 @@ class Manager():
         return _check_progress(job_id)
 
     def cancel(self, job_id):
-        '''Cancels job.'''
+        """Cancels job."""
         self.__threads[job_id].cancel()
         return job_id
 
     def event_fired(self, event):
-        '''Responds to event being fired.'''
+        """Responds to event being fired."""
         self.__status[event['job_id']] = event
 
     def __get_response(self, job_id):
-        '''Returns current progress for job id.'''
+        """Returns current progress for job id."""
         return json.dumps(self.__status[job_id])
 
 
 def _get_threads(query):
-    '''Get threads.'''
-    app = query.get('app', 'undefined')
-
-    if app == 'PartsGenie':
-        return [PartsThread(query, idx)
-                for idx in range(len(query['designs']))]
-    if app == 'PlasmidGenie':
-        return [PlasmidThread(query)]
-    if app == 'save':
-        return [IceThread(query)]
-
-    raise ValueError('Unknown app: ' + app)
+    """Get threads."""
+    return [PartsThread(query, idx) for idx in range(len(query['designs']))]

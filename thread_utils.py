@@ -1,18 +1,16 @@
-'''
-PartsGenie (c) University of Liverpool 2020
+"""
+PartsGenie (c) Pencil Biosciences 2025
 
-All rights reserved.
-
-@author:  neilswainston
-'''
+@author: neilswainston
+"""
 # pylint: disable=too-few-public-methods
 from threading import Thread
 
-from liv_utils import job_utils
+from partsgenie.utils import job_utils
 
 
 class AbstractThread(job_utils.JobThread):
-    '''An AbstractThread base class.'''
+    """An AbstractThread base class."""
 
     def __init__(self, query):
         job_utils.JobThread.__init__(self)
@@ -21,7 +19,7 @@ class AbstractThread(job_utils.JobThread):
         self._results = []
 
     def _fire_designs_event(self, status, iteration, message=''):
-        '''Fires an event.'''
+        """Fires an event."""
         event = {
             'update': {
                 'status': status,
@@ -40,7 +38,7 @@ class AbstractThread(job_utils.JobThread):
 
 
 class ThreadPool(Thread):
-    '''Basic class to run job Threads sequentially.'''
+    """Basic class to run job Threads sequentially."""
 
     def __init__(self, threads):
         self.__threads = threads

@@ -1,0 +1,47 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+name: Python package
+
+on:
+  push:
+    branches:
+      - '**'        # matches every branch
+  pull_request:
+    branches:
+      - '**'        # matches every branch
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ 3.13 ]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install flake8 pylint pytest pytest-cov
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Lint with flake8
+        run: |
+          # Apply strict flake8 linting:
+          flake8 . --count --show-source --statistics
+      - name: Lint with pylint
+        run: |
+          # Apply strict pylint linting:
+          pylint --disable=too-many-positional-arguments --min-similarity-lines 256 $(find . -name "*.py" | xargs)
+      - name: Test with pytest
+        run: |
+          pytest --cov=./ --cov-report=xml
+      - name: Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true

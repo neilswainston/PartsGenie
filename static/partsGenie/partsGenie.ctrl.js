@@ -112,9 +112,9 @@ partsGenieApp.controller("partsGenieCtrl", ["$scope", "$timeout", "$uibModal", "
 			},
 			temp_params: {
 				fixed: false,
-				required: ["name", "tir"],
-				min_end: 35,
-				max_end: 10000,
+				required: ["name", "len", "tir"],
+				min_end: 10,
+				max_end: 100,
 				valid: true,
 				id: "_6"
 			}
@@ -305,7 +305,7 @@ partsGenieApp.controller("partsGenieCtrl", ["$scope", "$timeout", "$uibModal", "
 			self.response = JSON.parse(event.data);
 			status = self.response.update.status;
 			
-			if(status == "cancelled" || status == "error" || status == "finished") {
+			if(status == "cancelled" || status == "error" || status == "finished" || status == "unfinished") {
 				source.close();
 
 				if(status == "finished") {
@@ -370,7 +370,7 @@ partsGenieApp.controller("partsGenieCtrl", ["$scope", "$timeout", "$uibModal", "
 			
 			if(match) {
 				data = {
-					"Entry name": "CDS" + idx,
+					"Entry Name": "CDS" + idx,
 					"Sequence": cdsTerm.toUpperCase()
 					};
 				

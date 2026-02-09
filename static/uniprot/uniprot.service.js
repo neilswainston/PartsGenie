@@ -2,7 +2,7 @@ uniprotApp.factory("UniprotService", ["$uibModal", function($uibModal) {
 	var obj = {};
 	
 	obj.updateFeature = function(feature, selected) {
-		feature.name = selected["Entry name"];
+		feature.name = selected["Entry Name"];
 		feature.temp_params.aa_seq = selected.Sequence;
 		feature.temp_params.orig_seq = selected.Sequence;
 		feature.temp_params.valid = true;

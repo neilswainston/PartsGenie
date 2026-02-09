@@ -1,10 +1,8 @@
-'''
-PartsGenie (c) University of Liverpool 2020
+"""
+PartsGenie (c) GeneGenie Bioinformatics 2025
 
-All rights reserved.
-
-@author:  neilswainston
-'''
+@author: neilswainston
+"""
 # pylint: disable=invalid-name
 # pylint: disable=no-member
 # pylint: disable=wrong-import-order
@@ -16,15 +14,14 @@ import traceback
 import uuid
 import zipfile
 
+import pandas as pd
 from Bio import Restriction
 from flask import Flask, jsonify, request, Response
-from werkzeug.utils import secure_filename
 
-from ice import export
-from liv_utils import dna_utils, net_utils, uniprot_utils
-#from liv_utils import dna_utils, ice_utils, net_utils, uniprot_utils
 import manager
+from partsgenie.utils import uniprot_utils
 import organisms
+
 
 # Configuration:
 SECRET_KEY = str(uuid.uuid4())
@@ -54,78 +51,47 @@ TESTING = False
 
 @app.route('/')
 def home():
-    '''Renders homepage.'''
+    """Renders homepage."""
     return app.send_static_file('index.html')
 
 
 @app.route('/<path:path>')
 def get_path(path):
-    '''Renders homepage.'''
+    """Renders homepage."""
     return_path = path if path.startswith('export') else 'index.html'
     return app.send_static_file(return_path)
 
 
 @app.route('/submit', methods=['POST'])
 def submit():
-    '''Responds to submission.'''
+    """Responds to submission."""
     return json.dumps({'job_ids': _MANAGER.submit(request.data)})
-
-
-@app.route('/submit_sbol', methods=['POST'])
-def submit_sbol():
-    '''Responds to submission.'''
-    filenames = []
-
-    for file in request.files.getlist('sbol'):
-        filename = secure_filename(file.filename)
-        filename = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filename)
-        filenames.append(filename)
-
-    taxonomy_id = request.form['taxonomy_id']
-
-    return json.dumps({'job_ids':
-                       _MANAGER.submit(filenames, taxonomy_id, True)})
 
 
 @app.route('/progress/<job_id>')
 def progress(job_id):
-    '''Returns progress of job.'''
+    """Returns progress of job."""
     return Response(_MANAGER.get_progress(job_id),
                     mimetype='text/event-stream')
 
 
 @app.route('/cancel/<job_id>')
 def cancel(job_id):
-    '''Cancels job.'''
+    """Cancels job."""
     return _MANAGER.cancel(job_id)
-
-
-@app.route('/groups/', methods=['POST'])
-def get_groups():
-    '''Gets groups from search term.'''
-    try:
-        ice_client = _connect_ice(request)
-        data = json.loads(request.data)
-
-        return json.dumps([group['label']
-                           for group in ice_client.search_groups(data['term'])
-                           if data['term'] in group['label']])
-    finally:
-        ice_client.close()
 
 
 @app.route('/organism_parents/')
 def get_organism_parents():
-    '''Get organism parents.'''
+    """Get organism parents."""
     return json.dumps(_ORG_PARENT_IDS)
 
 
 @app.route('/organisms/', methods=['POST'])
 def get_organisms():
-    '''Gets organisms from search term.
+    """Gets organisms from search term.
     Updated to assume r_rna corresponds to most prevalent
-    See https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6107228/.'''
+    See https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6107228/."""
     query = json.loads(request.data)
 
     data = [{'taxonomy_id': taxonomy_id,
@@ -139,104 +105,33 @@ def get_organisms():
 
 @app.route('/restr_enzymes')
 def get_restr_enzymes():
-    '''Gets supported restriction enzymes.'''
+    """Gets supported restriction enzymes."""
     return json.dumps([str(enz) for enz in Restriction.AllEnzymes])
-
-
-@app.route('/ice/connect', methods=['POST'])
-def connect_ice():
-    '''Connects to ICE.'''
-    try:
-        _connect_ice(request)
-        return json.dumps({'connected': True})
-    except ConnectionError as err:
-        message = 'Unable to connect. Is the URL correct?'
-        status_code = 503
-    except net_utils.NetworkError as err:
-        message = 'Unable to connect. Are the username and password correct?'
-        status_code = err.get_status()
-
-    response = jsonify({'message': message})
-    response.status_code = status_code
-    return response
-
-
-@app.route('/ice/search/', methods=['POST'])
-def search_ice():
-    '''Search ICE.'''
-    try:
-        ice_client = _connect_ice(request)
-        data = json.loads(request.data)
-        resp = ice_client.advanced_search(data['term'], data['type'], 16)
-        return json.dumps([result['entryInfo']['partId']
-                           for result in resp['results']
-                           if data['term'] in result['entryInfo']['partId']])
-    except ConnectionError as err:
-        message = 'Unable to connect. Is the URL correct?'
-        status_code = 503
-    except net_utils.NetworkError as err:
-        message = 'Unable to connect. Are the username and password correct?'
-        status_code = err.get_status()
-
-    response = jsonify({'message': message})
-    response.status_code = status_code
-    return response
 
 
 @app.route('/uniprot/<query>')
 def search_uniprot(query):
-    '''Search Uniprot.'''
-    fields = ['entry name', 'protein names', 'sequence', 'ec', 'organism',
-              'organism-id']
+    """Search Uniprot."""
+    fields = ['accession', 'protein_name', 'sequence', 'ec', 'organism_name',
+              'organism_id']
     result = uniprot_utils.search_uniprot(query, fields)
     return json.dumps(result)
 
 
 @app.route('/export', methods=['POST'])
 def export_order():
-    '''Export order.'''
+    """Save export file, returning the url."""
     data = json.loads(request.data)['designs']
-
-    if data[0]['typ'] == dna_utils.SO_PLASMID:
-        ice_client = _connect_ice(request)
-    else:
-        ice_client = None
-
-    dfs = export.export(ice_client, data)
-
-    return _save_export(dfs)
-
-
-@app.errorhandler(Exception)
-def handle_error(error):
-    '''Handles errors.'''
-    app.logger.error('Exception: %s', (error))
-    traceback.print_exc()
-
-    response = jsonify({'message': traceback.format_exc()})
-    response.status_code = 500
-    return response
-
-
-def _connect_ice(req):
-    '''Connects to ICE.'''
-    data = json.loads(req.data)
-
-    return ice_utils.get_ice_client(data['ice']['url'],
-                                    data['ice']['username'],
-                                    data['ice']['password'])
-
-
-def _save_export(dfs):
-    '''Save export file, returning the url.'''
     file_id = str(uuid.uuid4()).replace('-', '_')
     dir_name = os.path.join(os.path.join(_STATIC_FOLDER, 'export'), file_id)
 
     if not os.path.exists(dir_name):
         os.makedirs(dir_name)
 
-    for df in dfs:
-        df.to_csv(os.path.join(dir_name, df.name + '.csv'), index=False)
+    df = pd.DataFrame([[part['name'], part['seq']] for part in data],
+                      columns=['Name', 'Sequence'])
+
+    df.to_csv(os.path.join(dir_name, file_id + '.csv'), index=False)
 
     zip_file = os.path.join(dir_name + '.zip')
 
@@ -248,8 +143,19 @@ def _save_export(dfs):
     return json.dumps({'path': 'export/' + file_id + '.zip'})
 
 
+@app.errorhandler(Exception)
+def handle_error(error):
+    """Handles errors."""
+    app.logger.error('Exception: %s', (error))
+    traceback.print_exc()
+
+    response = jsonify({'message': traceback.format_exc()})
+    response.status_code = 500
+    return response
+
+
 def main(argv):
-    '''main method.'''
+    """main method."""
     if argv:
         app.run(host='0.0.0.0', threaded=True, port=int(argv[0]),
                 use_reloader=False)

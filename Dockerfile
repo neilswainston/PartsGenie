@@ -1,35 +1,21 @@
-FROM gcr.io/google-appengine/python
+# Use the official lightweight Python image.
+# https://hub.docker.com/_/python
+FROM python:3.13-slim
 
-# Create a virtualenv for dependencies. This isolates these packages from
-# system-level packages.
-# Use -p python3 or -p python3.7 to select python version. Default is version 2.
-RUN virtualenv /env -p python3.7
+# Allow statements and log messages to immediately appear in the Knative logs
+ENV PYTHONUNBUFFERED True
 
-# Setting these environment variables are the same as running
-# source /env/bin/activate.
-ENV VIRTUAL_ENV /env
-ENV PATH /env/bin:$PATH
+# Copy local code to the container image.
+ENV APP_HOME /app
+WORKDIR $APP_HOME
+COPY . ./
 
-# Issues experienced with ViennaRNA-2.4.14, therefore retaining 'stable' version:
-ARG VIENNA_VERSION="ViennaRNA-2.4.11"
+# Install production dependencies.
+RUN pip install -r requirements.txt
 
-RUN curl -fsSL https://www.tbi.univie.ac.at/RNA/download/sourcecode/2_4_x/$VIENNA_VERSION.tar.gz -o /opt/$VIENNA_VERSION.tar.gz \
-	&& tar zxvf /opt/$VIENNA_VERSION.tar.gz -C /opt/ \
-	&& cd /opt/$VIENNA_VERSION \
-	&& ./configure --without-perl --without-python --without-kinfold --without-forester --without-rnalocmin\
-	&& make \
-	&& make install
-	
-ENV PYTHONPATH /usr/local/lib/python3.7/site-packages:$PYTHONPATH
-
-# Copy the application's requirements.txt and run pip to install all
-# dependencies into the virtualenv.
-ADD requirements.txt /app/requirements.txt
-RUN pip install -r /app/requirements.txt
-
-# Add the application source code.
-ADD . /app
-
-# Run a WSGI server to serve the application. gunicorn must be declared as
-# a dependency in requirements.txt.
-CMD gunicorn -t 3600 -b :$PORT main:app
+# Run the web service on container startup. Here we use the gunicorn
+# webserver, with one worker process and 8 threads.
+# For environments with multiple CPU cores, increase the number of workers
+# to be equal to the cores available.
+# Timeout is set to 0 to disable the timeouts of the workers to allow Cloud Run to handle instance scaling.
+CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 main:app

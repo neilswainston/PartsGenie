@@ -13,7 +13,7 @@ partsGenieApp.factory("PartsGenieService", ["$http", function($http) {
 			"local_gc_window": 50,
 			"local_gc_min": 0.15,
 			"local_gc_max": 0.8,
-			"restr_enzs": [],
+			"restr_enzs": ["BbsI", "BsaI", "BsmBI", "PaqCI"],
 			"excl_codons": []
 		},
 	};

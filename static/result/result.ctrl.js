@@ -1,4 +1,4 @@
-resultApp.controller("resultCtrl", ["$scope", "ICEService", "ResultService", function($scope, ICEService, ResultService) {
+resultApp.controller("resultCtrl", ["$scope", "ResultService", function($scope, ResultService) {
 	var self = this;
 	
 	self.pagination = {
@@ -6,10 +6,6 @@ resultApp.controller("resultCtrl", ["$scope", "ICEService", "ResultService", fun
 	};
 	
 	var selected = {}
-
-	self.connected = function() {
-		return ICEService.connected
-	}
 	
 	self.results = function() {
 		return ResultService.results;

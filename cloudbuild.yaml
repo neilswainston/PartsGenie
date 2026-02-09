@@ -1,0 +1,36 @@
+steps:
+  # Docker Build:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 
+           '${LOCATION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/${_IMAGE_NAME}', 
+           '.']
+    env:
+      - "DOCKER_BUILDKIT=1"
+  
+  # Docker Push:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 
+           '${LOCATION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/${_IMAGE_NAME}']
+
+  # Cloud Run deploy:
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+    - 'run'
+    - 'deploy'
+    - '${_CLOUD_RUN_NAME}'
+    - '--image'
+    - '${LOCATION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/${_IMAGE_NAME}'
+    - '--region'
+    - '${LOCATION}'
+    - '--service-account'
+    - '${_SERVICE_ACCOUNT}'
+     
+options:
+  defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
+
+substitutions:
+  _REPO_NAME: ${PROJECT_ID}-repo
+  _SERVICE_ACCOUNT: ${PROJECT_ID}-sa@${PROJECT_ID}.iam.gserviceaccount.com
+  _IMAGE_NAME: parts-genie
+  _CLOUD_RUN_NAME: parts-genie

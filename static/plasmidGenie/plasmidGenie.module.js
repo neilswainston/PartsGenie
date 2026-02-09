@@ -1,1 +1,0 @@
-var plasmidGenieApp = angular.module("plasmidGenieApp", []);

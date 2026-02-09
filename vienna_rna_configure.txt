@@ -1,0 +1,1 @@
+./configure --without-perl --without-python --without-kinfold --without-forester --without-rnalocmin --without-doc-pdf --without-doc-html --without-doc --without-tutorial-pdf --without-tutorial CC="gcc -arch x86_64" CXX="g++ -arch x86_64" CPP="gcc -E" CXXCPP="g++ -E"
