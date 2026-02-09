@@ -3,6 +3,7 @@ PartsGenie (c) GeneGenie Bioinformatics 2025
 
 @author: neilswainston
 """
+# pylint: disable=too-few-public-methods
 import json
 import locale
 import os
@@ -12,6 +13,10 @@ from partsgenie.parts import PartsThread
 
 
 class Listener:
+    """Default Listener class."""
+    def __init__(self):
+        self.status = None
+
     def event_fired(self, event):
         """Responds to event being fired."""
         self.status = event['update']['status']
