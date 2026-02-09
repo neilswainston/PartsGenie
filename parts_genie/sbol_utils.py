@@ -3,12 +3,12 @@ PartsGenie (c) University of Liverpool 2020
 
 All rights reserved.
 
-@author:  neilswainston
+@authors:  neilswainston, pablocarb
 '''
 from sbml2sbol.sbol import Document, SO_CDS, SO_RBS
 
 from liv_utils import dna_utils, uniprot_utils
-
+from parts_genie import i2_utils 
 
 def to_query(filename, taxonomy_id):
     '''Convert SBOL documents to PartsGenie query.'''
@@ -101,13 +101,37 @@ def _get_feature(comp_def):
 
     if SO_CDS in comp_def.roles:
         # CDS:
-        uniprot_id = comp_def.displayId.split('_')[0]
-        uniprot_vals = uniprot_utils.get_uniprot_values(
-            [uniprot_id], ['sequence'])
+#       uniprot_vals = uniprot_utils.get_uniprot_values(
+#       [uniprot_id], ['sequence'])
+        if len(comp_def.sequences) == 0:
+            uniprot_id = comp_def.displayId.split('_')[0]
+            sequence = i2_utils.get_uniprot_sequence(uniprot_id)
+        
+            uniprot_vals = { uniprot_id: {'Sequence': sequence} }
+            if uniprot_id not in uniprot_vals:
+                raise ValueError('Uniprot id not found: %s' % uniprot_id)
+        else:
+            # If the sequence is present, no UniProt is needed
+            uniprot_id = comp_def.displayId.split('_')[0]
+            uniprot_vals = { uniprot_id: {'Sequence': comp_def.sequence.elements } }
+            # NA sequence
+            if comp_def.sequence.encoding == 'http://www.chem.qmul.ac.uk/iubmb/misc/naseq.html':
+                return  {
+                    'typ': dna_utils.SO_CDS,
+                    'name': comp_def.identity,
+                    'temp_params': {
+                        'fixed': True,
+                        'required': ['name', 'seq'],
+                        'valid': True,
+                        'id': comp_def.displayId,
+                        'seq': uniprot_vals[uniprot_id]['Sequence'],
+                        'orig_seq': uniprot_vals[uniprot_id]['Sequence']
+                    },
+                    'desc': '',
+                    'links': ''
+                }
 
-        if uniprot_id not in uniprot_vals:
-            raise ValueError('Uniprot id not found: %s' % uniprot_id)
-
+        # AA sequence
         return {
             'typ': dna_utils.SO_CDS,
             'name': comp_def.identity,

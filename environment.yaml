@@ -1,6 +1,6 @@
 name: parts_genie
-channels:
-  - conda-forge
+#channels:
+#  - conda-forge
 dependencies:
   - python=3.7
   - cython
@@ -9,4 +9,4 @@ dependencies:
   - gunicorn
   - bioconda::liv_utils
   - bioconda::viennarna
-  - sbml2sbol>=0.1.13
+  - conda-forge::sbml2sbol>=0.1.13
