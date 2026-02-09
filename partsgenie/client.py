@@ -6,7 +6,6 @@ PartsGenie (c) GeneGenie Bioinformatics 2025
 # pylint: disable=too-few-public-methods
 import json
 import locale
-import os
 import time
 
 from partsgenie.parts import PartsThread
@@ -22,32 +21,10 @@ class Listener:
         self.status = event['update']['status']
 
 
-def test_submit_simple():
-    """Tests submit method with simple query."""
-    _test_submit('simple_query.json')
+def submit(filepath):
+    """Submit."""
 
-
-def test_submit_complex():
-    """Tests submit method with complex query."""
-    _test_submit('complex_query.json')
-
-
-def test_submit_promoter():
-    """Tests submit method with promoter query."""
-    _test_submit('promoter_query.json')
-
-
-def test_submit_multiple():
-    """Tests submit method with simple query."""
-    _test_submit('multiple_query.json')
-
-
-def _test_submit(filename):
-    """Tests submit method."""
-    directory = os.path.dirname(os.path.realpath(__file__))
-    filename = os.path.join(directory, filename)
-
-    with open(filename, encoding=locale.getpreferredencoding()) as fle:
+    with open(filepath, encoding=locale.getpreferredencoding()) as fle:
         query = json.load(fle)
 
     # Do job in new thread, return result when completed:
@@ -62,4 +39,7 @@ def _test_submit(filename):
 
         time.sleep(1)
 
-    assert listener.status in ['finished', 'unfinished']
+    if listener.status == 'finished':
+        return thread.solution
+
+    raise ValueError(f'PartsGenie exited with status: {listener.status}')
