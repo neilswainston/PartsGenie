@@ -50,8 +50,8 @@ def test_mfe_fail():
         'mfe', [m_rna], temp=37.0, dangles='none')
 
     assert energies == [0.0]
-    assert not bp_xs
-    assert not bp_ys
+    assert not bp_xs[0]
+    assert not bp_ys[0]
 
 
 def test_subopt():

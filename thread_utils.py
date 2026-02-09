@@ -1,5 +1,5 @@
 """
-PartsGenie (c) Pencil Biosciences 2025
+PartsGenie (c) GeneGenie Bioinformatics 2025
 
 @author: neilswainston
 """
