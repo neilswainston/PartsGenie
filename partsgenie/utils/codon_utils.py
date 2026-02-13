@@ -175,7 +175,6 @@ class CodonOptimiser():
 
         for line in _get_codon_usage(self.__taxonomy_id).split('\n'):
             line = line.strip()
-            print(line)
 
             if line == '<PRE>':
                 in_codons = True
