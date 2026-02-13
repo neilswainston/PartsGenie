@@ -21,11 +21,12 @@ class Listener:
         self.status = event['update']['status']
 
 
-def submit(filepath):
+def submit(query):
     """Submit."""
 
-    with open(filepath, encoding=locale.getpreferredencoding()) as fle:
-        query = json.load(fle)
+    if isinstance(query, str):
+        with open(query, encoding=locale.getpreferredencoding()) as fle:
+            query = json.load(fle)
 
     # Do job in new thread, return result when completed:
     thread = PartsThread(query, idx=0, verbose=True)
