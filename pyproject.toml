@@ -19,5 +19,5 @@ dependencies = [
     "viennarna"
 ]
 
-[tool.setuptools]
-packages = ["partsgenie"]
+[tool.setuptools.packages.find]
+include = ["partsgenie*"]
