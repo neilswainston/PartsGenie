@@ -20,15 +20,13 @@ class PartsSolution():
 
     def __init__(self, dna, organism, filters):
         self.__dna = dna
-        # self.__dna['typ'] = dna_utils.SO_PART
-        # self.__dna['parameters']['Type'] = 'PART'
         self.__organism = organism
         self.__filters = filters
         self.__filters['restr_enzs'] = self.__filters.get('restr_enzs', [])
 
         self.__calc = rbs_calculator.RbsCalculator(
-            organism['r_rna'], vienna_utils) \
-            if self.__organism else None
+            self.__organism['r_rna'], vienna_utils) \
+            if 'r_rna' in self.__organism else None
 
         self.__cod_opt = codon_utils.CodonOptimiser(organism['taxonomy_id']) \
             if self.__organism else None
