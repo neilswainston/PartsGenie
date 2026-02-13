@@ -29,7 +29,7 @@ def submit(query):
             query = json.load(fle)
 
     # Do job in new thread, return result when completed:
-    thread = PartsThread(query, idx=0, verbose=True)
+    thread = PartsThread(query, idx=0)
     listener = Listener()
     thread.add_listener(listener)
     thread.start()
